@@ -1,0 +1,1 @@
+from .scamdd import *
