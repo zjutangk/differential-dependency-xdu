@@ -1,1 +1,1 @@
-from .scamdd import *
+from .domino import *
