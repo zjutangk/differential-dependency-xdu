@@ -9,18 +9,20 @@ class Domino:
         self.n = self.data.shape[0]
         
         self.delta_dist = None
+        self.T=None
 
     def run(self):
         RFDcs = {}
         self.delta_dist = self.get_distance_relation()
         for attr in self.attr_list:
-            ordered_delta_dist = self.ordered_relation(attr)
-            T = self.get_TRel(ordered_delta_dist[attr])
+            ordered_delta_dist = self.ordered_delta(attr)
+            self.delta_dist=ordered_delta_dist
+            T = self.get_TRel(attr)
             
 
 
     def _dist(self, xi, yi):
-        return self.data.iloc[xi] - self.data.iloc[yi];
+        return abs(self.data.iloc[xi] - self.data.iloc[yi])
 
     def get_distance_relation(self):
         delta_dist = []
@@ -30,19 +32,47 @@ class Domino:
         delta_dist = pd.DataFrame(delta_dist, columns=self.attr_list)
         return delta_dist
     
-    def ordered_relation(self, attr):
-        return self.data.sort_values(by=attr, ascending=False)
+    def ordered_delta(self, attr):
+        return self.delta_dist.sort_values(by=attr, ascending=True)
     
-    def _get_next_smaller_beta(self, current_beta):
-        
-        return None
+    def _get_next_smaller_beta(self, xi,attr):
+        for i in range(0,xi):
+            if self.delta_dist.iloc[xi-i-1][attr]<self.delta_dist.iloc[xi][attr]
+                return self.delta_dist.iloc[xi-i-1][attr]
+        return 0
 
-    
-    def get_TRel(self, ordered_attr):
-        T, T_beta = {}, {}
-        beta = None
-        for i in range(ordered_attr.shape[0]):
-            if beta is not None:
-                beta[i] = self._get_next_smaller_value(beta)  # type: ignore
+    def _dominate(self,xi,attr,l):
+        f=0
+        if len(l)==0:
+            return 1
+        for i in range(len(l)):
+            for k in self.attr_list:
+                    if l.iloc[i][k]>xi[k]:
+                        return 0
+                    if l.iloc[i][k]<xi[k]:
+                        f=1
+        if f:
+            return 1
+        else:
+            return 0
+
+    def get_TRel(self, attr):
+        #? 这边瞎jb写的
+        beta=self.delta_dist.iloc[-1][attr]
+        n=len(self.delta_dist)
+        T=dict(beta)
+        for i in range(len(self.delta_dist)):
+            beta_=self._get_next_smaller_beta(n-i,attr)
+            if beta_<beta:
+                beta=beta_
+                T[beta] = []
+            if self._dominate(self.delta_dist.iloc[n-i],attr,T[beta]):
+                T[beta].append(self.delta_dist.iloc[n-i])
+
+
+
+
+
+
     
 
